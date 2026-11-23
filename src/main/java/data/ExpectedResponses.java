@@ -19,6 +19,4 @@ public final class ExpectedResponses {
     public static final String TRACK_NOT_FOUND = "Заказ не найден";
     public static final String ROUTE_NOT_FOUND = "Not Found.";
 
-    private ExpectedResponses() {
-    }
 }

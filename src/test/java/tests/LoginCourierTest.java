@@ -9,6 +9,7 @@ import io.qameta.allure.Story;
 import model.CourierCredentialsModel;
 import model.CourierModel;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import static data.ExpectedResponses.ACCOUNT_NOT_FOUND;
@@ -25,27 +26,35 @@ import static steps.ResponseSteps.positiveId;
 @Feature("Логин курьера")
 public class LoginCourierTest extends BaseApiTest {
 
+    private CourierModel courier;
+    private CourierCredentialsModel credentials;
+    private int courierId;
+
+    @Before
+    @Step("Создать тестового курьера и подготовить данные для авторизации")
+    public void setUpCourier() {
+        courier = newCourier();
+        courierId = data.prepareCourier(courier);
+
+        credentials = new CourierCredentialsModel(
+                courier.getLogin(),
+                courier.getPassword()
+        );
+    }
     @Step("Сравнить id из авторизации с id подготовленного курьера")
-    private void assertSameCourier(int expected, int actual) {
-        Assert.assertEquals(expected, actual);
+    private void assertSameCourier(int expectedId, int actual) {
+        Assert.assertEquals(expectedId, actual);
     }
 
     @Test
     @DisplayName("Курьер может авторизоваться")
-    @Description("Готовим курьера, проверяем HTTP 200 и совпадение id")
+    @Description("Авторизуем курьера, проверяем HTTP 200 и совпадение id")
     @Story("Логин курьера")
     @Step("Сценарий: Курьер может авторизоваться")
     public void courierCanLogin() {
-        CourierModel courier = newCourier();
-        int expectedId = data.prepareCourier(courier);
-
-        CourierCredentialsModel credentials = new CourierCredentialsModel(
-                courier.getLogin(),
-                courier.getPassword()
-        );
 
         int actualId = positiveId(loginCourier(credentials), OK, "id");
-        assertSameCourier(expectedId, actualId);
+        assertSameCourier(courierId, actualId);
     }
 
     @Test
@@ -54,13 +63,6 @@ public class LoginCourierTest extends BaseApiTest {
     @Story("Логин курьера")
     @Step("Сценарий: Логин: Login отсутствует")
     public void loginWithoutLoginMissing() {
-        CourierModel courier = newCourier();
-        data.prepareCourier(courier);
-
-        CourierCredentialsModel credentials = new CourierCredentialsModel(
-                courier.getLogin(),
-                courier.getPassword()
-        );
         credentials.setLogin(null);
 
         checkError(loginCourier(credentials), BAD_REQUEST, LOGIN_MISSING);
@@ -72,13 +74,6 @@ public class LoginCourierTest extends BaseApiTest {
     @Story("Логин курьера")
     @Step("Сценарий: Логин: Login пустой")
     public void loginWithoutLoginEmpty() {
-        CourierModel courier = newCourier();
-        data.prepareCourier(courier);
-
-        CourierCredentialsModel credentials = new CourierCredentialsModel(
-                courier.getLogin(),
-                courier.getPassword()
-        );
         credentials.setLogin("");
 
         checkError(loginCourier(credentials), BAD_REQUEST, LOGIN_MISSING);
@@ -90,13 +85,6 @@ public class LoginCourierTest extends BaseApiTest {
     @Story("Логин курьера")
     @Step("Сценарий: Логин: Password отсутствует")
     public void loginWithoutPasswordMissing() {
-        CourierModel courier = newCourier();
-        data.prepareCourier(courier);
-
-        CourierCredentialsModel credentials = new CourierCredentialsModel(
-                courier.getLogin(),
-                courier.getPassword()
-        );
         credentials.setPassword(null);
 
         checkError(loginCourier(credentials), BAD_REQUEST, LOGIN_MISSING);
@@ -108,13 +96,6 @@ public class LoginCourierTest extends BaseApiTest {
     @Story("Логин курьера")
     @Step("Сценарий: Логин: Password пустой")
     public void loginWithoutPasswordEmpty() {
-        CourierModel courier = newCourier();
-        data.prepareCourier(courier);
-
-        CourierCredentialsModel credentials = new CourierCredentialsModel(
-                courier.getLogin(),
-                courier.getPassword()
-        );
         credentials.setPassword("");
 
         checkError(loginCourier(credentials), BAD_REQUEST, LOGIN_MISSING);
@@ -126,13 +107,6 @@ public class LoginCourierTest extends BaseApiTest {
     @Story("Логин курьера")
     @Step("Сценарий: Авторизация: неверный Login")
     public void wrongLoginIsRejected() {
-        CourierModel courier = newCourier();
-        data.prepareCourier(courier);
-
-        CourierCredentialsModel credentials = new CourierCredentialsModel(
-                courier.getLogin(),
-                courier.getPassword()
-        );
         credentials.setLogin(courier.getLogin() + "_wrong");
 
         checkError(loginCourier(credentials), NOT_FOUND, ACCOUNT_NOT_FOUND);
@@ -144,13 +118,6 @@ public class LoginCourierTest extends BaseApiTest {
     @Story("Логин курьера")
     @Step("Сценарий: Авторизация: неверный Password")
     public void wrongPasswordIsRejected() {
-        CourierModel courier = newCourier();
-        data.prepareCourier(courier);
-
-        CourierCredentialsModel credentials = new CourierCredentialsModel(
-                courier.getLogin(),
-                courier.getPassword()
-        );
         credentials.setPassword(courier.getPassword() + "_wrong");
 
         checkError(loginCourier(credentials), NOT_FOUND, ACCOUNT_NOT_FOUND);
@@ -162,13 +129,13 @@ public class LoginCourierTest extends BaseApiTest {
     @Story("Логин курьера")
     @Step("Сценарий: Несуществующий пользователь")
     public void unknownCourierIsRejected() {
-        CourierModel courier = newCourier();
+        CourierModel unknownCourier = newCourier();
 
-        CourierCredentialsModel credentials = new CourierCredentialsModel(
-                courier.getLogin(),
-                courier.getPassword()
+        CourierCredentialsModel unknowCredentials = new CourierCredentialsModel(
+                unknownCourier.getLogin(),
+                unknownCourier.getPassword()
         );
 
-        checkError(loginCourier(credentials), NOT_FOUND, ACCOUNT_NOT_FOUND);
+        checkError(loginCourier(unknowCredentials), NOT_FOUND, ACCOUNT_NOT_FOUND);
     }
 }

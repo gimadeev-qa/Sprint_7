@@ -1,6 +1,17 @@
 package model;
 
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class CourierCredentialsModel {
+    private String login;
+    private String password;
+}
+
+/*public class CourierCredentialsModel {
 
     private String login;
     private String password;
@@ -30,3 +41,4 @@ public class CourierCredentialsModel {
 
 
 }
+*/
